@@ -14,13 +14,196 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      couples: {
+        Row: {
+          created_at: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      diary_entries: {
+        Row: {
+          content: string
+          couple_id: string
+          created_at: string
+          entry_date: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          couple_id: string
+          created_at?: string
+          entry_date?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          couple_id?: string
+          created_at?: string
+          entry_date?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diary_entries_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invite_codes: {
+        Row: {
+          code: string
+          couple_id: string | null
+          created_at: string
+          expires_at: string
+          used: boolean
+          user_id: string
+        }
+        Insert: {
+          code: string
+          couple_id?: string | null
+          created_at?: string
+          expires_at?: string
+          used?: boolean
+          user_id: string
+        }
+        Update: {
+          code?: string
+          couple_id?: string | null
+          created_at?: string
+          expires_at?: string
+          used?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invite_codes_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moods: {
+        Row: {
+          couple_id: string
+          created_at: string
+          id: string
+          mood: string
+          mood_date: string
+          user_id: string
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string
+          id?: string
+          mood: string
+          mood_date?: string
+          user_id: string
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string
+          id?: string
+          mood?: string
+          mood_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moods_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          couple_id: string | null
+          created_at: string
+          display_name: string
+          id: string
+        }
+        Insert: {
+          couple_id?: string | null
+          created_at?: string
+          display_name?: string
+          id: string
+        }
+        Update: {
+          couple_id?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_couple_fk"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      streaks: {
+        Row: {
+          couple_id: string
+          current_streak: number
+          last_active_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          couple_id: string
+          current_streak?: number
+          last_active_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          couple_id?: string
+          current_streak?: number
+          last_active_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "streaks_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: true
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      bump_streak: { Args: never; Returns: undefined }
+      current_couple_id: { Args: never; Returns: string }
+      join_partner: { Args: { p_code: string }; Returns: string }
+      unlink_couple: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
