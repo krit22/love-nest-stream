@@ -9,15 +9,29 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VaultRouteImport } from './routes/vault'
 import { Route as MoodRouteImport } from './routes/mood'
+import { Route as MemoriesRouteImport } from './routes/memories'
 import { Route as LinkRouteImport } from './routes/link'
+import { Route as GamesRouteImport } from './routes/games'
 import { Route as DiaryRouteImport } from './routes/diary'
+import { Route as DatesRouteImport } from './routes/dates'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 
+const VaultRoute = VaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MoodRoute = MoodRouteImport.update({
   id: '/mood',
   path: '/mood',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MemoriesRoute = MemoriesRouteImport.update({
+  id: '/memories',
+  path: '/memories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LinkRoute = LinkRouteImport.update({
@@ -25,9 +39,19 @@ const LinkRoute = LinkRouteImport.update({
   path: '/link',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesRoute = GamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DiaryRoute = DiaryRouteImport.update({
   id: '/diary',
   path: '/diary',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DatesRoute = DatesRouteImport.update({
+  id: '/dates',
+  path: '/dates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -44,48 +68,106 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/dates': typeof DatesRoute
   '/diary': typeof DiaryRoute
+  '/games': typeof GamesRoute
   '/link': typeof LinkRoute
+  '/memories': typeof MemoriesRoute
   '/mood': typeof MoodRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/dates': typeof DatesRoute
   '/diary': typeof DiaryRoute
+  '/games': typeof GamesRoute
   '/link': typeof LinkRoute
+  '/memories': typeof MemoriesRoute
   '/mood': typeof MoodRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/dates': typeof DatesRoute
   '/diary': typeof DiaryRoute
+  '/games': typeof GamesRoute
   '/link': typeof LinkRoute
+  '/memories': typeof MemoriesRoute
   '/mood': typeof MoodRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/diary' | '/link' | '/mood'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/dates'
+    | '/diary'
+    | '/games'
+    | '/link'
+    | '/memories'
+    | '/mood'
+    | '/vault'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/diary' | '/link' | '/mood'
-  id: '__root__' | '/' | '/auth' | '/diary' | '/link' | '/mood'
+  to:
+    | '/'
+    | '/auth'
+    | '/dates'
+    | '/diary'
+    | '/games'
+    | '/link'
+    | '/memories'
+    | '/mood'
+    | '/vault'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/dates'
+    | '/diary'
+    | '/games'
+    | '/link'
+    | '/memories'
+    | '/mood'
+    | '/vault'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  DatesRoute: typeof DatesRoute
   DiaryRoute: typeof DiaryRoute
+  GamesRoute: typeof GamesRoute
   LinkRoute: typeof LinkRoute
+  MemoriesRoute: typeof MemoriesRoute
   MoodRoute: typeof MoodRoute
+  VaultRoute: typeof VaultRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vault': {
+      id: '/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof VaultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mood': {
       id: '/mood'
       path: '/mood'
       fullPath: '/mood'
       preLoaderRoute: typeof MoodRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/memories': {
+      id: '/memories'
+      path: '/memories'
+      fullPath: '/memories'
+      preLoaderRoute: typeof MemoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/link': {
@@ -95,11 +177,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LinkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games': {
+      id: '/games'
+      path: '/games'
+      fullPath: '/games'
+      preLoaderRoute: typeof GamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/diary': {
       id: '/diary'
       path: '/diary'
       fullPath: '/diary'
       preLoaderRoute: typeof DiaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dates': {
+      id: '/dates'
+      path: '/dates'
+      fullPath: '/dates'
+      preLoaderRoute: typeof DatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -122,10 +218,24 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  DatesRoute: DatesRoute,
   DiaryRoute: DiaryRoute,
+  GamesRoute: GamesRoute,
   LinkRoute: LinkRoute,
+  MemoriesRoute: MemoriesRoute,
   MoodRoute: MoodRoute,
+  VaultRoute: VaultRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
