@@ -1,18 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Gate } from "@/components/Gate";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Heart, Lock } from "lucide-react";
+import { Heart, Lock, ImagePlus, Video, Mic, X } from "lucide-react";
 import diaryBear from "@/assets/diary-bear.jpeg";
 import girlCorazon from "@/assets/girl-corazon.jpeg";
-import adventureJournal from "@/assets/adventure-journal.jpeg";
+import bearStar from "@/assets/bear-star.png";
+import { uploadToMedia } from "@/lib/upload";
 
 export const Route = createFileRoute("/diary")({ component: DiaryPage });
 
 type Entry = { id: string; user_id: string; entry_date: string; content: string; created_at: string; };
+type Media = { id: string; user_id: string; kind: "photo" | "video" | "voice"; url: string; diary_entry_id: string | null; created_at: string; caption: string | null };
 
 function DiaryPage() { return <Gate><DiaryInner /></Gate>; }
 
@@ -24,6 +26,8 @@ function DiaryInner() {
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
 
   const { data: partner } = useQuery({
     queryKey: ["partner", coupleId],
@@ -42,12 +46,23 @@ function DiaryInner() {
     },
   });
 
+  const { data: media } = useQuery({
+    queryKey: ["diary-media", coupleId],
+    queryFn: async () => {
+      const { data } = await supabase.from("media_items").select("id,user_id,kind,url,diary_entry_id,created_at,caption")
+        .eq("couple_id", coupleId).not("diary_entry_id", "is", null).order("created_at", { ascending: false }).limit(120);
+      return (data ?? []) as Media[];
+    },
+  });
+
   const myToday = entries?.find((e) => e.entry_date === today && e.user_id === user!.id);
   const theirToday = entries?.find((e) => e.entry_date === today && e.user_id !== user!.id);
 
   const past = (entries ?? []).filter((e) => e.entry_date < today);
   const grouped: Record<string, Entry[]> = {};
   for (const e of past) (grouped[e.entry_date] ||= []).push(e);
+
+  const mediaFor = (entryId: string) => (media ?? []).filter((m) => m.diary_entry_id === entryId);
 
   const save = async () => {
     if (!draft.trim()) return;
@@ -70,6 +85,23 @@ function DiaryInner() {
     finally { setSaving(false); }
   };
 
+  const attachFile = async (file: File, kind: "photo" | "video") => {
+    if (!myToday) {
+      toast.error("write today's entry first 💗");
+      return;
+    }
+    try {
+      toast.message("uploading…");
+      const url = await uploadToMedia(file, user!.id);
+      const { error } = await supabase.from("media_items").insert({
+        couple_id: coupleId, user_id: user!.id, kind, url, diary_entry_id: myToday.id,
+      });
+      if (error) throw error;
+      toast.success("attached 💕");
+      qc.invalidateQueries({ queryKey: ["diary-media", coupleId] });
+    } catch (e: any) { toast.error(e.message); }
+  };
+
   return (
     <div className="space-y-10">
       {/* Header banner */}
@@ -79,6 +111,7 @@ function DiaryInner() {
           <p className="font-hand text-2xl text-rose">today's love note 💌</p>
           <h1 className="font-script text-4xl sm:text-5xl text-earth">{formatDate(today)}</h1>
         </div>
+        <img src={bearStar} alt="" className="absolute -bottom-3 right-4 w-20 sm:w-24 animate-float" />
       </div>
 
       {/* Today entries */}
@@ -89,12 +122,28 @@ function DiaryInner() {
           <p className="font-hand text-xl text-rose/70 mb-3">My entry — today</p>
           {myToday && !editing ? (
             <>
-              <p className="font-script text-2xl leading-relaxed text-earth whitespace-pre-wrap min-h-[8rem]">{myToday.content}</p>
-              <div className="mt-5 pt-4 border-t border-dashed border-rose/20 flex justify-between items-center">
-                <span className="font-hand text-sm text-earth/50">editable until midnight 🌙</span>
+              <p className="font-script text-2xl leading-relaxed text-earth whitespace-pre-wrap min-h-[6rem]">{myToday.content}</p>
+
+              {/* attached media */}
+              {mediaFor(myToday.id).length > 0 && (
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  {mediaFor(myToday.id).map((m) => (
+                    <MediaThumb key={m.id} m={m} />
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-5 pt-4 border-t border-dashed border-rose/20 flex justify-between items-center flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <button onClick={() => fileRef.current?.click()} className="p-2 rounded-full bg-blush/15 text-rose hover:bg-blush/30" title="add photo"><ImagePlus className="size-4" /></button>
+                  <button onClick={() => videoRef.current?.click()} className="p-2 rounded-full bg-blush/15 text-rose hover:bg-blush/30" title="add video"><Video className="size-4" /></button>
+                  <span className="font-hand text-sm text-earth/50">add memory 📷</span>
+                </div>
                 <button onClick={() => { setDraft(myToday.content); setEditing(true); }}
                   className="font-hand text-lg text-rose hover:text-earth">edit ✏️</button>
               </div>
+              <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && attachFile(e.target.files[0], "photo")} />
+              <input ref={videoRef} type="file" accept="video/*" hidden onChange={(e) => e.target.files?.[0] && attachFile(e.target.files[0], "video")} />
             </>
           ) : (
             <>
@@ -120,7 +169,16 @@ function DiaryInner() {
           <div className="absolute top-3 right-4 font-hand text-xl text-rose flex items-center gap-1"><Heart className="size-4 fill-rose" /> {partner?.display_name ?? "bear"}</div>
           <p className="font-hand text-xl text-rose/70 mb-3">{partner?.display_name ?? "Partner"} — today</p>
           {theirToday ? (
-            <p className="font-script text-2xl leading-relaxed text-earth whitespace-pre-wrap">{theirToday.content}</p>
+            <>
+              <p className="font-script text-2xl leading-relaxed text-earth whitespace-pre-wrap">{theirToday.content}</p>
+              {mediaFor(theirToday.id).length > 0 && (
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  {mediaFor(theirToday.id).map((m) => (
+                    <MediaThumb key={m.id} m={m} />
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-8">
               <img src={girlCorazon} alt="waiting bear" className="w-40 rounded-2xl shadow-card opacity-90" />
@@ -152,10 +210,16 @@ function DiaryInner() {
                     <div className="bg-blush/10 rounded-2xl p-4">
                       <p className="font-hand text-lg text-rose mb-1">you 💗</p>
                       <p className="font-script text-xl text-earth/80 whitespace-pre-wrap">{mine?.content ?? "—"}</p>
+                      {mine && mediaFor(mine.id).length > 0 && (
+                        <div className="mt-3 grid grid-cols-3 gap-2">{mediaFor(mine.id).map((m) => <MediaThumb key={m.id} m={m} />)}</div>
+                      )}
                     </div>
                     <div className="bg-honey/10 rounded-2xl p-4">
                       <p className="font-hand text-lg text-rose mb-1">{partner?.display_name ?? "Partner"} 🧸</p>
                       <p className="font-script text-xl text-earth/80 whitespace-pre-wrap">{theirs?.content ?? "—"}</p>
+                      {theirs && mediaFor(theirs.id).length > 0 && (
+                        <div className="mt-3 grid grid-cols-3 gap-2">{mediaFor(theirs.id).map((m) => <MediaThumb key={m.id} m={m} />)}</div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -164,11 +228,33 @@ function DiaryInner() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
 
-      {/* Decorative footer */}
-      <div className="rounded-3xl overflow-hidden shadow-soft border-4 border-white">
-        <img src={adventureJournal} alt="Our adventure journal" className="w-full object-cover" />
-      </div>
+function MediaThumb({ m }: { m: Media }) {
+  const [open, setOpen] = useState(false);
+  if (m.kind === "photo") {
+    return (
+      <>
+        <button onClick={() => setOpen(true)} className="aspect-square rounded-2xl overflow-hidden border-2 border-rose/20 hover:border-rose transition">
+          <img src={m.url} alt="" className="w-full h-full object-cover" />
+        </button>
+        {open && <Lightbox onClose={() => setOpen(false)}><img src={m.url} alt="" className="max-h-[85vh] max-w-[92vw] rounded-2xl" /></Lightbox>}
+      </>
+    );
+  }
+  if (m.kind === "video") {
+    return <video src={m.url} controls className="aspect-square rounded-2xl object-cover bg-black/5 border-2 border-rose/20" />;
+  }
+  return <audio src={m.url} controls className="col-span-3 w-full" />;
+}
+
+function Lightbox({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  return (
+    <div onClick={onClose} className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm">
+      <button className="absolute top-4 right-4 text-white"><X /></button>
+      {children}
     </div>
   );
 }
