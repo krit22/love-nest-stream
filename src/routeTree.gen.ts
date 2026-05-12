@@ -9,18 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as MoodRouteImport } from './routes/mood'
 import { Route as LinkRouteImport } from './routes/link'
 import { Route as DiaryRouteImport } from './routes/diary'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 
-const TimelineRoute = TimelineRouteImport.update({
-  id: '/timeline',
-  path: '/timeline',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const MoodRoute = MoodRouteImport.update({
   id: '/mood',
   path: '/mood',
@@ -53,7 +47,6 @@ export interface FileRoutesByFullPath {
   '/diary': typeof DiaryRoute
   '/link': typeof LinkRoute
   '/mood': typeof MoodRoute
-  '/timeline': typeof TimelineRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +54,6 @@ export interface FileRoutesByTo {
   '/diary': typeof DiaryRoute
   '/link': typeof LinkRoute
   '/mood': typeof MoodRoute
-  '/timeline': typeof TimelineRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,14 +62,13 @@ export interface FileRoutesById {
   '/diary': typeof DiaryRoute
   '/link': typeof LinkRoute
   '/mood': typeof MoodRoute
-  '/timeline': typeof TimelineRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/diary' | '/link' | '/mood' | '/timeline'
+  fullPaths: '/' | '/auth' | '/diary' | '/link' | '/mood'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/diary' | '/link' | '/mood' | '/timeline'
-  id: '__root__' | '/' | '/auth' | '/diary' | '/link' | '/mood' | '/timeline'
+  to: '/' | '/auth' | '/diary' | '/link' | '/mood'
+  id: '__root__' | '/' | '/auth' | '/diary' | '/link' | '/mood'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -86,18 +77,10 @@ export interface RootRouteChildren {
   DiaryRoute: typeof DiaryRoute
   LinkRoute: typeof LinkRoute
   MoodRoute: typeof MoodRoute
-  TimelineRoute: typeof TimelineRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/timeline': {
-      id: '/timeline'
-      path: '/timeline'
-      fullPath: '/timeline'
-      preLoaderRoute: typeof TimelineRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/mood': {
       id: '/mood'
       path: '/mood'
@@ -142,8 +125,17 @@ const rootRouteChildren: RootRouteChildren = {
   DiaryRoute: DiaryRoute,
   LinkRoute: LinkRoute,
   MoodRoute: MoodRoute,
-  TimelineRoute: TimelineRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

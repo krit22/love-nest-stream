@@ -110,7 +110,7 @@ function HomeInner() {
 
       {/* Memory tease */}
       <section className="grid sm:grid-cols-3 gap-4">
-        <button onClick={() => navigate({ to: "/timeline" })} className="col-span-2 relative rounded-3xl overflow-hidden p-6 bg-card border-2 border-rose/15 shadow-card text-left hover:shadow-soft transition-all">
+        <button onClick={() => navigate({ to: "/memories" })} className="col-span-2 relative rounded-3xl overflow-hidden p-6 bg-card border-2 border-rose/15 shadow-card text-left hover:shadow-soft transition-all">
           <div className="flex items-center gap-3 mb-3">
             <span className="size-10 rounded-2xl gradient-blush flex items-center justify-center"><Clock className="size-5 text-white" /></span>
             <span className="font-hand text-2xl text-rose">our memories</span>
