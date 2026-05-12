@@ -5,12 +5,24 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CalendarHeart, Trash2, Clock } from "lucide-react";
+import { CalendarHeart, Trash2, Clock, Video, MonitorPlay } from "lucide-react";
 import bearStar from "@/assets/bear-star.png";
+import { VideoCall } from "@/components/VideoCall";
 
 export const Route = createFileRoute("/dates")({ component: DatesPage });
 
-type DateRow = { id: string; created_by: string; title: string; scheduled_at: string; recurrence: string | null; notes: string | null };
+type DateRow = {
+  id: string; created_by: string; title: string; scheduled_at: string;
+  recurrence: string | null; notes: string | null; date_type: string | null;
+};
+
+const DATE_TYPES = [
+  { value: "video_call", label: "💗 video call", screenShare: false },
+  { value: "movie_night", label: "🎬 movie night (screen share)", screenShare: true },
+  { value: "music_together", label: "🎵 listen to music together (screen share)", screenShare: true },
+  { value: "dinner", label: "🍝 video call dinner", screenShare: false },
+  { value: "study", label: "📚 study together", screenShare: false },
+];
 
 function DatesPage() { return <Gate><DatesInner /></Gate>; }
 
@@ -21,7 +33,9 @@ function DatesInner() {
   const [title, setTitle] = useState("");
   const [when, setWhen] = useState("");
   const [recurrence, setRecurrence] = useState("none");
+  const [dateType, setDateType] = useState("video_call");
   const [notes, setNotes] = useState("");
+  const [activeCall, setActiveCall] = useState<DateRow | null>(null);
 
   const { data: dates } = useQuery({
     queryKey: ["dates", coupleId],
@@ -36,9 +50,10 @@ function DatesInner() {
     const { error } = await supabase.from("virtual_dates").insert({
       couple_id: coupleId, created_by: user!.id, title, scheduled_at: new Date(when).toISOString(),
       recurrence: recurrence === "none" ? null : recurrence, notes: notes || null,
-    });
+      date_type: dateType,
+    } as any);
     if (error) return toast.error(error.message);
-    setTitle(""); setWhen(""); setNotes(""); setRecurrence("none");
+    setTitle(""); setWhen(""); setNotes(""); setRecurrence("none"); setDateType("video_call");
     toast.success("date booked 💌");
     qc.invalidateQueries({ queryKey: ["dates", coupleId] });
   };
@@ -55,6 +70,7 @@ function DatesInner() {
   const next = upcoming[0];
   const minutesTo = next ? Math.round((new Date(next.scheduled_at).getTime() - now) / 60000) : null;
   const isLive = next && minutesTo !== null && minutesTo <= 15 && minutesTo >= -60;
+  const nextTypeMeta = next ? DATE_TYPES.find((t) => t.value === (next.date_type ?? "video_call")) : null;
 
   return (
     <div className="space-y-8">
@@ -69,12 +85,21 @@ function DatesInner() {
             <>
               <p className="font-hand text-2xl">date started 💗</p>
               <h2 className="font-script text-4xl">{next.title}</h2>
-              <p className="font-hand text-lg mt-1 opacity-90">enjoy your time, lovebirds 🌷</p>
+              <p className="font-hand text-lg mt-1 opacity-90">{nextTypeMeta?.label}</p>
+              <p className="font-hand text-base mt-1 opacity-80">your bear is being auto-connected 💞</p>
+              <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
+                <button onClick={() => setActiveCall(next)}
+                  className="px-6 py-3 rounded-full bg-white text-rose font-semibold shadow-card flex items-center gap-2 hover:scale-105 transition">
+                  {nextTypeMeta?.screenShare ? <MonitorPlay className="size-4" /> : <Video className="size-4" />}
+                  join the call 💗
+                </button>
+              </div>
             </>
           ) : (
             <>
               <p className="font-hand text-2xl text-rose">next date</p>
               <h2 className="font-script text-3xl text-earth">{next.title}</h2>
+              <p className="font-hand text-lg text-rose/80">{nextTypeMeta?.label}</p>
               <p className="font-hand text-xl text-earth/70">{new Date(next.scheduled_at).toLocaleString()}</p>
               <p className="text-sm text-earth/50 mt-1 flex items-center justify-center gap-1"><Clock className="size-3" /> in {minutesTo} min</p>
             </>
@@ -88,6 +113,10 @@ function DatesInner() {
         <p className="font-script text-2xl text-earth">plan a new date 🌹</p>
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="movie night, video call dinner…"
           className="w-full bg-blush/10 rounded-full px-4 py-2 font-hand text-xl text-earth focus:outline-none focus:ring-2 focus:ring-rose/40" />
+        <select value={dateType} onChange={(e) => setDateType(e.target.value)}
+          className="w-full bg-blush/10 rounded-full px-4 py-2 font-hand text-lg text-rose">
+          {DATE_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+        </select>
         <div className="grid sm:grid-cols-2 gap-3">
           <input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)}
             className="bg-blush/10 rounded-full px-4 py-2 font-sans text-earth focus:outline-none focus:ring-2 focus:ring-rose/40" />
@@ -103,9 +132,18 @@ function DatesInner() {
         <button onClick={create} className="px-6 py-2 rounded-full gradient-blush text-white font-semibold flex items-center gap-2"><CalendarHeart className="size-4" /> book it</button>
       </div>
 
-      {/* Upcoming */}
       <Section title="upcoming 💗" rows={upcoming} userId={user!.id} onDelete={remove} />
       <Section title="past dates 🌷" rows={past} userId={user!.id} onDelete={remove} />
+
+      {activeCall && (
+        <VideoCall
+          roomName={`honeybear-${coupleId}-${activeCall.id}`}
+          displayName={profile?.display_name ?? "honey"}
+          withScreenShare={DATE_TYPES.find((t) => t.value === activeCall.date_type)?.screenShare}
+          subtitle={activeCall.title}
+          onClose={() => setActiveCall(null)}
+        />
+      )}
     </div>
   );
 }
@@ -116,18 +154,22 @@ function Section({ title, rows, userId, onDelete }: { title: string; rows: DateR
     <div>
       <h2 className="font-script text-3xl text-rose mb-3">{title}</h2>
       <div className="space-y-2">
-        {rows.map((d) => (
-          <div key={d.id} className="bg-card rounded-2xl px-5 py-3 border-2 border-rose/15 shadow-card flex items-center justify-between gap-3">
-            <div>
-              <p className="font-script text-xl text-earth">{d.title}</p>
-              <p className="font-hand text-base text-rose/70">{new Date(d.scheduled_at).toLocaleString()} {d.recurrence ? `· ${d.recurrence}` : ""}</p>
-              {d.notes && <p className="font-hand text-base text-earth/60">{d.notes}</p>}
+        {rows.map((d) => {
+          const meta = DATE_TYPES.find((t) => t.value === (d.date_type ?? "video_call"));
+          return (
+            <div key={d.id} className="bg-card rounded-2xl px-5 py-3 border-2 border-rose/15 shadow-card flex items-center justify-between gap-3">
+              <div>
+                <p className="font-script text-xl text-earth">{d.title}</p>
+                <p className="font-hand text-base text-rose/70">{new Date(d.scheduled_at).toLocaleString()} {d.recurrence ? `· ${d.recurrence}` : ""}</p>
+                <p className="font-hand text-base text-rose/60">{meta?.label}</p>
+                {d.notes && <p className="font-hand text-base text-earth/60">{d.notes}</p>}
+              </div>
+              {d.created_by === userId && (
+                <button onClick={() => onDelete(d.id)} className="text-rose/50 hover:text-rose"><Trash2 className="size-4" /></button>
+              )}
             </div>
-            {d.created_by === userId && (
-              <button onClick={() => onDelete(d.id)} className="text-rose/50 hover:text-rose"><Trash2 className="size-4" /></button>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

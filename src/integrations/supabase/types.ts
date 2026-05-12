@@ -302,6 +302,7 @@ export type Database = {
           couple_id: string
           created_at: string
           created_by: string
+          date_type: string
           id: string
           notes: string | null
           recurrence: string | null
@@ -312,6 +313,7 @@ export type Database = {
           couple_id: string
           created_at?: string
           created_by: string
+          date_type?: string
           id?: string
           notes?: string | null
           recurrence?: string | null
@@ -322,6 +324,7 @@ export type Database = {
           couple_id?: string
           created_at?: string
           created_by?: string
+          date_type?: string
           id?: string
           notes?: string | null
           recurrence?: string | null

@@ -5,9 +5,13 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Gamepad2, Heart, RotateCw, Send } from "lucide-react";
+import { Heart, RotateCw, Send } from "lucide-react";
+import { DareMedia } from "@/components/DareMedia";
 
 export const Route = createFileRoute("/games")({ component: GamesPage });
+
+type DareKind = "camera" | "mic" | "photo" | "none";
+type Dare = { text: string; kind: DareKind };
 
 function GamesPage() { return <Gate><GamesInner /></Gate>; }
 
@@ -30,7 +34,31 @@ const THIS_OR_THAT = [
   ["text", "call"],
   ["cuddle", "kiss"],
 ];
-const DARES = ["send a selfie right now 📸", "say I love you in 3 languages 💞", "sing 5 seconds of our song 🎶", "describe me in 3 words 💗", "send the last photo in your gallery 🌷", "make a heart with your hands 🫶"];
+const DARES: Dare[] = [
+  { text: "send a selfie right now 📸", kind: "photo" },
+  { text: "send the last photo in your gallery 🌷", kind: "photo" },
+  { text: "send a photo of what you're wearing today 👗", kind: "photo" },
+  { text: "send a photo of the view outside your window 🌇", kind: "photo" },
+  { text: "send a photo of your current vibe (food, drink, anything) 🍰", kind: "photo" },
+  { text: "say I love you in 3 languages 💞", kind: "mic" },
+  { text: "sing 5 seconds of our song 🎶", kind: "mic" },
+  { text: "whisper a secret only I should hear 🤫", kind: "mic" },
+  { text: "record a 10-second voice note describing my smile 🥰", kind: "mic" },
+  { text: "do your best impression of me — record it 😆", kind: "mic" },
+  { text: "tell me your favorite memory of us in 15 seconds 💗", kind: "mic" },
+  { text: "make a heart with your hands on camera 🫶", kind: "camera" },
+  { text: "blow me a kiss on camera 💋", kind: "camera" },
+  { text: "show me your goofiest face on camera 🤪", kind: "camera" },
+  { text: "do a little happy dance on camera 💃", kind: "camera" },
+  { text: "show me your cutest pout 🥺", kind: "camera" },
+  { text: "give the camera the biggest hug you can 🤗", kind: "camera" },
+  { text: "wink at me three times on camera 😉", kind: "camera" },
+  { text: "describe me in 3 words 💗", kind: "none" },
+  { text: "name 5 things you love about me 💞", kind: "none" },
+  { text: "promise me one tiny sweet thing for tomorrow 🌷", kind: "none" },
+  { text: "tell me the moment you knew you liked me 💌", kind: "none" },
+  { text: "compliment me in a way you never have before ✨", kind: "none" },
+];
 const SENTENCES = [
   "When I think of you I feel…",
   "The thing I miss most about you is…",
@@ -152,19 +180,42 @@ function ThisOrThat({ onSave }: { onSave: (p: any) => void }) {
 }
 
 function DareWheel({ onSave }: { onSave: (p: any) => void }) {
-  const [dare, setDare] = useState<string | null>(null);
-  const spin = () => setDare(DARES[Math.floor(Math.random() * DARES.length)]);
+  const [dare, setDare] = useState<Dare | null>(null);
+  const [history, setHistory] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
+  const spin = () => {
+    // pick a dare we haven't seen yet this session
+    const unseen = DARES.filter((d) => !history.includes(d.text));
+    const pool = unseen.length > 0 ? unseen : DARES;
+    const next = pool[Math.floor(Math.random() * pool.length)];
+    setDare(next);
+    setHistory((h) => [...h.slice(-DARES.length + 1), next.text]);
+  };
   return (
     <Card title="Dare wheel 🎯">
-      <div className="text-center">
-        <button onClick={spin} className="size-32 rounded-full gradient-blush text-white font-script text-2xl shadow-soft hover:scale-105 transition flex items-center justify-center mx-auto">spin</button>
+      <div className="text-center space-y-3">
+        <button onClick={spin} className="size-32 rounded-full gradient-blush text-white font-script text-2xl shadow-soft hover:scale-105 transition flex items-center justify-center mx-auto">{dare ? "spin again" : "spin"}</button>
         {dare && (
           <>
-            <p className="mt-4 font-script text-3xl text-earth">{dare}</p>
-            <button onClick={() => onSave({ dare })} className="mt-3 px-5 py-2 rounded-full gradient-blush text-white">accepted 💗</button>
+            <p className="mt-4 font-script text-3xl text-earth">{dare.text}</p>
+            <p className="font-hand text-base text-rose/70">
+              {dare.kind === "camera" && "we'll open your camera so you can perform it 📷"}
+              {dare.kind === "mic" && "we'll open your mic so you can record it 🎙️"}
+              {dare.kind === "photo" && "we'll ask for a photo from your gallery 🖼️"}
+              {dare.kind === "none" && "say it out loud or type it below 💗"}
+            </p>
+            <button onClick={() => setOpen(true)} className="mt-1 px-5 py-2 rounded-full gradient-blush text-white">take the dare 💗</button>
           </>
         )}
       </div>
+      {open && dare && (
+        <DareMedia
+          kind={dare.kind}
+          prompt={dare.text}
+          onClose={() => setOpen(false)}
+          onComplete={(note) => onSave({ dare: dare.text, kind: dare.kind, note })}
+        />
+      )}
     </Card>
   );
 }
