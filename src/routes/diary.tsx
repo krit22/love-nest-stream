@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Heart, Lock, ImagePlus, Video, Mic, X } from "lucide-react";
+import { Heart, Lock, ImagePlus, Video, X } from "lucide-react";
 import diaryBear from "@/assets/diary-bear.jpeg";
 import girlCorazon from "@/assets/girl-corazon.jpeg";
 import bearStar from "@/assets/bear-star.png";
