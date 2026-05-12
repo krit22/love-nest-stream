@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { Gate } from "@/components/Gate";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, BookHeart, Smile, Clock } from "lucide-react";
+import { Heart, BookHeart, Smile, Clock, Lock, CalendarHeart, Gamepad2 } from "lucide-react";
 import teddyBalloons from "@/assets/teddy-balloons.jpeg";
 import bearsHearts from "@/assets/bears-hearts.jpeg";
 import bearsKiss from "@/assets/bears-kiss.jpeg";
@@ -120,6 +120,28 @@ function HomeInner() {
         <div className="rounded-3xl overflow-hidden shadow-card border-4 border-white">
           <img src={bearsKiss} alt="Bears kiss" className="w-full h-full object-cover" />
         </div>
+      </section>
+
+      {/* Three more emotional features */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <button onClick={() => navigate({ to: "/vault" })}
+          className="group relative overflow-hidden text-left p-6 rounded-3xl bg-card border-2 border-rose/15 shadow-card hover:-translate-y-1 transition">
+          <span className="size-10 rounded-2xl gradient-blush flex items-center justify-center mb-3"><Lock className="size-5 text-white" /></span>
+          <p className="font-script text-2xl text-earth">Open When</p>
+          <p className="font-hand text-lg text-earth/60">comfort for hard days 🫂</p>
+        </button>
+        <button onClick={() => navigate({ to: "/dates" })}
+          className="group relative overflow-hidden text-left p-6 rounded-3xl bg-card border-2 border-rose/15 shadow-card hover:-translate-y-1 transition">
+          <span className="size-10 rounded-2xl gradient-blush flex items-center justify-center mb-3"><CalendarHeart className="size-5 text-white" /></span>
+          <p className="font-script text-2xl text-earth">Virtual Dates</p>
+          <p className="font-hand text-lg text-earth/60">our little plans 💌</p>
+        </button>
+        <button onClick={() => navigate({ to: "/games" })}
+          className="group relative overflow-hidden text-left p-6 rounded-3xl bg-card border-2 border-rose/15 shadow-card hover:-translate-y-1 transition">
+          <span className="size-10 rounded-2xl gradient-blush flex items-center justify-center mb-3"><Gamepad2 className="size-5 text-white" /></span>
+          <p className="font-script text-2xl text-earth">Couple Games</p>
+          <p className="font-hand text-lg text-earth/60">play & laugh together 🎀</p>
+        </button>
       </section>
 
       {/* Sweet quote with rainbow teddy */}
