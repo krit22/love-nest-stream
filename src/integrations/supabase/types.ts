@@ -67,6 +67,33 @@ export type Database = {
           },
         ]
       }
+      game_results: {
+        Row: {
+          couple_id: string
+          created_at: string
+          game: string
+          id: string
+          payload: Json
+          user_id: string
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string
+          game: string
+          id?: string
+          payload?: Json
+          user_id: string
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string
+          game?: string
+          id?: string
+          payload?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       invite_codes: {
         Row: {
           code: string
@@ -101,6 +128,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      media_items: {
+        Row: {
+          caption: string | null
+          couple_id: string
+          created_at: string
+          diary_entry_id: string | null
+          duration_seconds: number | null
+          id: string
+          kind: string
+          tag: string | null
+          url: string
+          user_id: string
+          vault_category: string | null
+        }
+        Insert: {
+          caption?: string | null
+          couple_id: string
+          created_at?: string
+          diary_entry_id?: string | null
+          duration_seconds?: number | null
+          id?: string
+          kind: string
+          tag?: string | null
+          url: string
+          user_id: string
+          vault_category?: string | null
+        }
+        Update: {
+          caption?: string | null
+          couple_id?: string
+          created_at?: string
+          diary_entry_id?: string | null
+          duration_seconds?: number | null
+          id?: string
+          kind?: string
+          tag?: string | null
+          url?: string
+          user_id?: string
+          vault_category?: string | null
+        }
+        Relationships: []
       }
       moods: {
         Row: {
@@ -194,6 +263,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vault_items: {
+        Row: {
+          category: string
+          content: string | null
+          couple_id: string
+          created_at: string
+          id: string
+          kind: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          content?: string | null
+          couple_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          content?: string | null
+          couple_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      virtual_dates: {
+        Row: {
+          couple_id: string
+          created_at: string
+          created_by: string
+          id: string
+          notes: string | null
+          recurrence: string | null
+          scheduled_at: string
+          title: string
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          notes?: string | null
+          recurrence?: string | null
+          scheduled_at: string
+          title: string
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          recurrence?: string | null
+          scheduled_at?: string
+          title?: string
+        }
+        Relationships: []
       }
     }
     Views: {
