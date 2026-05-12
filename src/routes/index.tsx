@@ -144,15 +144,41 @@ function HomeInner() {
         </button>
       </section>
 
-      {/* Sweet quote with rainbow teddy */}
-      <section className="relative rounded-3xl overflow-hidden bg-card border-2 border-rose/15 shadow-card grid sm:grid-cols-[auto_1fr] items-center gap-4 p-6">
-        <img src={teddyRainbow} alt="Teddy with rainbow balloons" className="w-40 sm:w-48 rounded-2xl object-cover" />
-        <div className="font-hand text-2xl text-earth/80 leading-snug">
-          "in every quiet day, in every distant night —<br />
-          <span className="text-rose font-script text-3xl">we're still each other's home.</span>"
-          <p className="text-sm font-sans text-earth/40 mt-3 not-italic">— this little space belongs only to you two 💕</p>
-        </div>
-      </section>
+      {/* Sweet quote with rainbow teddy — fresh quote on every visit */}
+      <RandomQuote />
     </div>
+  );
+}
+
+const LOVE_QUOTES = [
+  { line: "in every quiet day, in every distant night —", emph: "we're still each other's home." },
+  { line: "distance means so little —", emph: "when someone means so much." },
+  { line: "i carry your heart with me,", emph: "i carry it in my heart." },
+  { line: "you are my today and all of my tomorrows —", emph: "every single one of them." },
+  { line: "the sun is far away, yet it warms us —", emph: "and so do you, my love." },
+  { line: "i don't need to see you to feel you —", emph: "you live inside my chest." },
+  { line: "thousands of miles between us, and yet —", emph: "you're closer than my own heartbeat." },
+  { line: "every star you see tonight,", emph: "i'm wishing on the same one." },
+  { line: "love does not count the miles —", emph: "it only counts the moments." },
+  { line: "you are the calm in my busy world,", emph: "the home in my wandering heart." },
+  { line: "if i had a flower for every time i thought of you,", emph: "i could walk through my garden forever." },
+  { line: "we are not together,", emph: "but we're not apart either." },
+  { line: "i fell in love with you in the most quiet way —", emph: "and i love you the same, every single day." },
+  { line: "you are the warmth in my morning coffee,", emph: "the smile in my last thought of the night." },
+  { line: "no distance is too far,", emph: "no night is too long, when it ends in you." },
+];
+
+function RandomQuote() {
+  // Pick fresh on every render — full reload, route change, etc.
+  const q = LOVE_QUOTES[Math.floor(Math.random() * LOVE_QUOTES.length)];
+  return (
+    <section className="relative rounded-3xl overflow-hidden bg-card border-2 border-rose/15 shadow-card grid sm:grid-cols-[auto_1fr] items-center gap-4 p-6">
+      <img src={teddyRainbow} alt="Teddy with rainbow balloons" className="w-40 sm:w-48 rounded-2xl object-cover" />
+      <div className="font-hand text-2xl text-earth/80 leading-snug">
+        "{q.line}<br />
+        <span className="text-rose font-script text-3xl">{q.emph}</span>"
+        <p className="text-sm font-sans text-earth/40 mt-3 not-italic">— this little space belongs only to you two 💕</p>
+      </div>
+    </section>
   );
 }
