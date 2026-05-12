@@ -4,23 +4,22 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import bearsKiss from "@/assets/bears-kiss.jpeg";
 
 export const Route = createFileRoute("/mood")({ component: MoodPage });
 
 const MOODS = [
-  { key: "Happy", color: "oklch(0.85 0.12 90)" },
-  { key: "Sad", color: "oklch(0.7 0.06 240)" },
-  { key: "Angry", color: "oklch(0.65 0.18 30)" },
-  { key: "Lonely", color: "oklch(0.6 0.04 280)" },
-  { key: "Missing you", color: "oklch(0.78 0.08 20)" },
-  { key: "Stressed", color: "oklch(0.68 0.1 60)" },
-  { key: "Peaceful", color: "oklch(0.78 0.05 150)" },
-  { key: "Grateful", color: "oklch(0.82 0.08 110)" },
+  { key: "Happy", emoji: "🥰", color: "oklch(0.88 0.1 50)" },
+  { key: "Sad", emoji: "🥺", color: "oklch(0.78 0.06 240)" },
+  { key: "Angry", emoji: "😤", color: "oklch(0.75 0.16 25)" },
+  { key: "Lonely", emoji: "🫂", color: "oklch(0.7 0.05 280)" },
+  { key: "Missing you", emoji: "💌", color: "oklch(0.82 0.1 15)" },
+  { key: "Stressed", emoji: "😮‍💨", color: "oklch(0.75 0.1 60)" },
+  { key: "Peaceful", emoji: "🌷", color: "oklch(0.82 0.06 150)" },
+  { key: "Grateful", emoji: "✨", color: "oklch(0.85 0.08 110)" },
 ];
 
-function MoodPage() {
-  return <Gate><MoodInner /></Gate>;
-}
+function MoodPage() { return <Gate><MoodInner /></Gate>; }
 
 function MoodInner() {
   const { user, profile } = useAuth();
@@ -59,56 +58,57 @@ function MoodInner() {
       }
       qc.invalidateQueries({ queryKey: ["moods-today", coupleId, today] });
       qc.invalidateQueries({ queryKey: ["home"] });
-      toast.success("Felt and shared.");
-    } catch (e: any) {
-      toast.error(e.message);
-    }
+      toast.success("felt and shared 💗");
+    } catch (e: any) { toast.error(e.message); }
   };
 
   const message = (() => {
     if (!myMood || !theirMood) return null;
-    if (myMood.mood === theirMood.mood) return `You both feel ${myMood.mood.toLowerCase()}. You're not alone in it.`;
+    if (myMood.mood === theirMood.mood) return `you both feel ${myMood.mood.toLowerCase()} — you're not alone in it 🫂`;
     if (["Sad", "Lonely", "Stressed"].includes(myMood.mood) && ["Sad", "Lonely", "Stressed"].includes(theirMood.mood))
-      return "It's a heavy day for you both. Be gentle.";
-    return `You feel ${myMood.mood.toLowerCase()}, they feel ${theirMood.mood.toLowerCase()}. A small message could help.`;
+      return "it's a heavy day for you both. be gentle 🌷";
+    return `you feel ${myMood.mood.toLowerCase()}, they feel ${theirMood.mood.toLowerCase()} — a tiny message could help 💌`;
   })();
 
   return (
-    <div>
-      <div className="mb-10 mt-4">
-        <h1 className="font-serif text-3xl">Today's mood</h1>
-        <p className="font-serif italic text-earth/50 mt-1">One small word, shared.</p>
+    <div className="space-y-10">
+      <div className="text-center">
+        <p className="font-hand text-2xl text-rose">how's your tiny heart today?</p>
+        <h1 className="font-script text-5xl text-earth">today's mood 🌸</h1>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-12">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {MOODS.map((m) => {
           const active = myMood?.mood === m.key;
           return (
-            <button
-              key={m.key}
-              onClick={() => setMood(m.key)}
-              className={`p-5 rounded-2xl border transition-all text-left ${active ? "border-blush bg-blush/10 scale-[1.02]" : "border-earth/10 bg-card hover:border-earth/30"}`}
-            >
-              <span className="block size-3 rounded-full mb-3" style={{ backgroundColor: m.color }} />
-              <span className="font-serif text-lg text-earth">{m.key}</span>
+            <button key={m.key} onClick={() => setMood(m.key)}
+              className={`relative p-5 rounded-3xl border-2 transition-all text-left ${active ? "border-rose bg-blush/20 scale-105 shadow-soft" : "border-rose/15 bg-card hover:border-rose/40 hover:-translate-y-1"}`}>
+              <div className="text-3xl mb-2">{m.emoji}</div>
+              <span className="font-hand text-xl text-earth">{m.key}</span>
+              <span className="absolute top-3 right-3 size-3 rounded-full" style={{ backgroundColor: m.color }} />
             </button>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-2 gap-px bg-earth/10 rounded-2xl overflow-hidden border border-earth/5">
-        <div className="bg-card p-6 text-center">
-          <div className="text-[10px] uppercase tracking-widest text-earth/40 mb-2">You</div>
-          <div className="font-serif text-2xl italic text-earth">{myMood?.mood ?? "—"}</div>
+      <div className="grid sm:grid-cols-[1fr_auto_1fr] gap-4 items-center">
+        <div className="bg-card rounded-3xl p-6 text-center border-2 border-rose/15 shadow-card">
+          <p className="font-hand text-lg text-rose mb-2">you 💗</p>
+          <p className="text-4xl mb-1">{MOODS.find(m => m.key === myMood?.mood)?.emoji ?? "💭"}</p>
+          <p className="font-script text-2xl text-earth">{myMood?.mood ?? "not yet"}</p>
         </div>
-        <div className="bg-card p-6 text-center">
-          <div className="text-[10px] uppercase tracking-widest text-earth/40 mb-2">{partner?.display_name ?? "Partner"}</div>
-          <div className="font-serif text-2xl italic text-earth">{theirMood?.mood ?? "—"}</div>
+        <img src={bearsKiss} alt="bears" className="size-28 rounded-2xl object-cover shadow-card mx-auto animate-heartbeat" />
+        <div className="bg-card rounded-3xl p-6 text-center border-2 border-rose/15 shadow-card">
+          <p className="font-hand text-lg text-rose mb-2">{partner?.display_name ?? "bear"} 🧸</p>
+          <p className="text-4xl mb-1">{MOODS.find(m => m.key === theirMood?.mood)?.emoji ?? "💭"}</p>
+          <p className="font-script text-2xl text-earth">{theirMood?.mood ?? "not yet"}</p>
         </div>
       </div>
 
       {message && (
-        <p className="text-center mt-8 font-serif italic text-earth/60">{message}</p>
+        <div className="bg-blush/15 rounded-3xl p-6 border-2 border-rose/20 shadow-card text-center">
+          <p className="font-hand text-2xl text-rose">{message}</p>
+        </div>
       )}
     </div>
   );

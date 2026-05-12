@@ -4,15 +4,16 @@ import { useAuth } from "@/lib/auth";
 import { Gate } from "@/components/Gate";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Heart, BookHeart, Smile, Clock } from "lucide-react";
+import teddyBalloons from "@/assets/teddy-balloons.jpeg";
+import bearsHearts from "@/assets/bears-hearts.jpeg";
+import bearsKiss from "@/assets/bears-kiss.jpeg";
+import teddyRainbow from "@/assets/teddy-rainbow-balloons.jpeg";
 
 export const Route = createFileRoute("/")({ component: Home });
 
 function Home() {
-  return (
-    <Gate>
-      <HomeInner />
-    </Gate>
-  );
+  return <Gate><HomeInner /></Gate>;
 }
 
 function HomeInner() {
@@ -42,70 +43,94 @@ function HomeInner() {
     },
   });
 
-  useEffect(() => {
-    document.title = "Home — Twofold";
-  }, []);
+  useEffect(() => { document.title = "Home — Honey & Bear 🧸"; }, []);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-  const partnerName = data?.partner?.display_name ?? "your partner";
+  const partnerName = data?.partner?.display_name ?? "your bear";
 
   return (
-    <div>
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-12 items-end mb-20 mt-4">
-        <div className="md:col-span-2">
-          <h1 className="font-serif text-4xl sm:text-5xl leading-tight mb-4">
-            {greeting}, {profile?.display_name}. <br />
-            <span className="italic text-blush">{data?.partner ? `${partnerName} is here too.` : "Waiting for your partner…"}</span>
-          </h1>
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="flex items-center gap-2 px-3 py-1 bg-sage/15 text-sage text-xs font-medium rounded-full">
-              <span className="size-1.5 rounded-full bg-sage animate-pulse" />
-              Connected
-            </span>
-            {data?.myMood && (
-              <span className="text-xs italic font-serif text-earth/50">You feel: {data.myMood.mood}</span>
-            )}
-            {data?.partnerMood && (
-              <span className="text-xs italic font-serif text-earth/50">{partnerName} feels: {data.partnerMood.mood}</span>
-            )}
+    <div className="space-y-12">
+      {/* Hero */}
+      <section className="relative overflow-hidden rounded-[2rem] gradient-romantic p-6 sm:p-10 shadow-soft border-2 border-rose/15">
+        <div className="grid md:grid-cols-[1fr_auto] gap-6 items-center">
+          <div className="relative z-10">
+            <p className="font-hand text-2xl text-rose mb-1">{greeting}, sweet bear 🧸</p>
+            <h1 className="font-script text-4xl sm:text-5xl text-earth leading-tight">
+              Hi {profile?.display_name},<br />
+              <span className="text-rose">{data?.partner ? `${partnerName} is here too 💗` : "waiting for your honey…"}</span>
+            </h1>
+            <div className="flex items-center gap-2 flex-wrap mt-5">
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/70 rounded-full text-xs font-medium text-rose shadow-card">
+                <Heart className="size-3 fill-rose animate-heartbeat" /> Connected
+              </span>
+              {data?.myMood && <span className="px-3 py-1.5 bg-white/70 rounded-full text-xs font-hand text-lg text-earth/70">you · {data.myMood.mood}</span>}
+              {data?.partnerMood && <span className="px-3 py-1.5 bg-white/70 rounded-full text-xs font-hand text-lg text-earth/70">{partnerName} · {data.partnerMood.mood}</span>}
+            </div>
           </div>
-        </div>
-        <div className="text-right flex flex-col items-end">
-          <div className="text-7xl font-serif text-earth/15 leading-none mb-1">{data?.streak?.current_streak ?? 0}</div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-earth/50">Day streak of memories</div>
+          <img src={teddyBalloons} alt="Teddy with balloons" className="w-48 sm:w-60 rounded-3xl shadow-soft border-4 border-white animate-float justify-self-center" />
         </div>
       </section>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
-        <button
-          onClick={() => navigate({ to: "/diary" })}
-          className="text-left p-8 rounded-2xl bg-card border border-earth/5 hover:border-blush/40 transition-colors"
-        >
-          <div className="text-[10px] uppercase tracking-widest text-earth/40 mb-3">Today's diary</div>
-          <p className="font-serif text-xl text-earth">
-            {data?.myEntry ? "You wrote today ✍️" : "You haven't written yet"}
-          </p>
-          <p className="font-serif italic text-sm text-earth/50 mt-1">
-            {data?.partnerEntry ? `${partnerName} wrote today.` : `${partnerName} hasn't written yet.`}
-          </p>
+      {/* Streak banner */}
+      <section className="relative overflow-hidden rounded-3xl bg-card border-2 border-rose/15 p-6 shadow-card flex items-center gap-5">
+        <img src={bearsHearts} alt="Bears" className="size-24 rounded-2xl object-cover shadow-card" />
+        <div className="flex-1">
+          <p className="font-hand text-xl text-rose">our love streak</p>
+          <p className="font-script text-5xl text-earth leading-none">{data?.streak?.current_streak ?? 0} <span className="text-rose">days</span></p>
+          <p className="text-sm text-earth/60 mt-1">of showing up for each other 💕</p>
+        </div>
+        <div className="hidden sm:flex flex-col items-end font-hand text-xl text-rose/70">
+          <span>🌷 keep going 🧸</span>
+        </div>
+      </section>
+
+      {/* Quick cards */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <button onClick={() => navigate({ to: "/diary" })}
+          className="group relative overflow-hidden text-left p-7 rounded-3xl bg-card border-2 border-rose/15 shadow-card hover:shadow-soft hover:-translate-y-1 transition-all">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="size-10 rounded-2xl gradient-blush flex items-center justify-center"><BookHeart className="size-5 text-white" /></span>
+            <span className="font-hand text-2xl text-rose">today's diary</span>
+          </div>
+          <p className="font-script text-2xl text-earth">{data?.myEntry ? "you wrote today ✍️💌" : "write a love note 💕"}</p>
+          <p className="font-hand text-lg text-earth/60 mt-1">{data?.partnerEntry ? `${partnerName} wrote too 🥰` : `${partnerName} hasn't written yet…`}</p>
         </button>
 
-        <button
-          onClick={() => navigate({ to: "/mood" })}
-          className="text-left p-8 rounded-2xl bg-card border border-earth/5 hover:border-blush/40 transition-colors"
-        >
-          <div className="text-[10px] uppercase tracking-widest text-earth/40 mb-3">Today's mood</div>
-          <p className="font-serif text-xl text-earth">
-            {data?.myMood ? `You feel ${data.myMood.mood.toLowerCase()}` : "Share how you feel"}
-          </p>
-          <p className="font-serif italic text-sm text-earth/50 mt-1">
-            {data?.partnerMood ? `${partnerName} feels ${data.partnerMood.mood.toLowerCase()}.` : `${partnerName} hasn't shared yet.`}
-          </p>
+        <button onClick={() => navigate({ to: "/mood" })}
+          className="group relative overflow-hidden text-left p-7 rounded-3xl bg-card border-2 border-rose/15 shadow-card hover:shadow-soft hover:-translate-y-1 transition-all">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="size-10 rounded-2xl gradient-blush flex items-center justify-center"><Smile className="size-5 text-white" /></span>
+            <span className="font-hand text-2xl text-rose">today's mood</span>
+          </div>
+          <p className="font-script text-2xl text-earth">{data?.myMood ? `you feel ${data.myMood.mood.toLowerCase()}` : "share how you feel 🌸"}</p>
+          <p className="font-hand text-lg text-earth/60 mt-1">{data?.partnerMood ? `${partnerName} feels ${data.partnerMood.mood.toLowerCase()} 💗` : `${partnerName} hasn't shared yet…`}</p>
         </button>
       </section>
 
-      <p className="text-center font-serif italic text-sm text-earth/40">This space belongs only to you two.</p>
+      {/* Memory tease */}
+      <section className="grid sm:grid-cols-3 gap-4">
+        <button onClick={() => navigate({ to: "/timeline" })} className="col-span-2 relative rounded-3xl overflow-hidden p-6 bg-card border-2 border-rose/15 shadow-card text-left hover:shadow-soft transition-all">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="size-10 rounded-2xl gradient-blush flex items-center justify-center"><Clock className="size-5 text-white" /></span>
+            <span className="font-hand text-2xl text-rose">our memories</span>
+          </div>
+          <p className="font-script text-xl text-earth">every little day, gathered together 🌷</p>
+        </button>
+        <div className="rounded-3xl overflow-hidden shadow-card border-4 border-white">
+          <img src={bearsKiss} alt="Bears kiss" className="w-full h-full object-cover" />
+        </div>
+      </section>
+
+      {/* Sweet quote with rainbow teddy */}
+      <section className="relative rounded-3xl overflow-hidden bg-card border-2 border-rose/15 shadow-card grid sm:grid-cols-[auto_1fr] items-center gap-4 p-6">
+        <img src={teddyRainbow} alt="Teddy with rainbow balloons" className="w-40 sm:w-48 rounded-2xl object-cover" />
+        <div className="font-hand text-2xl text-earth/80 leading-snug">
+          "in every quiet day, in every distant night —<br />
+          <span className="text-rose font-script text-3xl">we're still each other's home.</span>"
+          <p className="text-sm font-sans text-earth/40 mt-3 not-italic">— this little space belongs only to you two 💕</p>
+        </div>
+      </section>
     </div>
   );
 }

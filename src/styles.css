@@ -34,40 +34,54 @@
   --color-earth: var(--earth);
   --color-blush: var(--blush);
   --color-sage: var(--sage);
-  --font-serif: 'EB Garamond', serif;
-  --font-sans: 'Inter', sans-serif;
+  --color-rose: var(--rose);
+  --color-cream: var(--cream);
+  --color-honey: var(--honey);
+  --font-serif: 'Quicksand', sans-serif;
+  --font-sans: 'Quicksand', sans-serif;
+  --font-hand: 'Caveat', cursive;
+  --font-script: 'Dancing Script', cursive;
 }
 
 :root {
-  --radius: 1rem;
-  --parchment: oklch(0.984 0.012 88);
-  --earth: oklch(0.36 0.025 55);
-  --blush: oklch(0.78 0.06 35);
-  --sage: oklch(0.72 0.05 130);
+  --radius: 1.25rem;
+  /* soft cream + pink palette */
+  --parchment: oklch(0.985 0.012 20);     /* cream */
+  --cream: oklch(0.985 0.012 20);
+  --earth: oklch(0.42 0.06 20);            /* warm rosy brown for text */
+  --blush: oklch(0.82 0.09 15);            /* soft pink */
+  --rose: oklch(0.74 0.14 15);             /* deeper rose */
+  --honey: oklch(0.86 0.07 70);            /* teddy honey */
+  --sage: oklch(0.78 0.05 150);
 
-  --background: var(--parchment);
+  --background: oklch(0.98 0.014 10);      /* whisper pink */
   --foreground: var(--earth);
-  --card: oklch(1 0 0);
+  --card: oklch(1 0.005 20);
   --card-foreground: var(--earth);
   --popover: oklch(1 0 0);
   --popover-foreground: var(--earth);
-  --primary: var(--earth);
-  --primary-foreground: var(--parchment);
-  --secondary: oklch(0.94 0.012 75);
+  --primary: var(--rose);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0.025 10);
   --secondary-foreground: var(--earth);
-  --muted: oklch(0.94 0.012 75);
-  --muted-foreground: oklch(0.55 0.02 55);
+  --muted: oklch(0.96 0.018 15);
+  --muted-foreground: oklch(0.55 0.04 20);
   --accent: var(--blush);
   --accent-foreground: var(--earth);
-  --destructive: oklch(0.55 0.22 25);
+  --destructive: oklch(0.65 0.2 25);
   --destructive-foreground: var(--parchment);
-  --border: oklch(0.36 0.025 55 / 12%);
-  --input: oklch(0.36 0.025 55 / 12%);
-  --ring: var(--blush);
+  --border: oklch(0.74 0.14 15 / 18%);
+  --input: oklch(0.74 0.14 15 / 18%);
+  --ring: var(--rose);
+
+  --gradient-romantic: linear-gradient(135deg, oklch(0.97 0.025 15) 0%, oklch(0.94 0.04 20) 100%);
+  --gradient-blush: linear-gradient(135deg, var(--blush), var(--rose));
+  --shadow-soft: 0 10px 40px -15px oklch(0.74 0.14 15 / 0.3);
+  --shadow-card: 0 4px 20px -8px oklch(0.74 0.14 15 / 0.25);
 }
 
 @layer base {
-  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap');
 
   * {
     border-color: var(--color-border);
@@ -75,12 +89,48 @@
 
   html, body, #root {
     background-color: var(--color-background);
+    background-image:
+      radial-gradient(circle at 10% 10%, oklch(0.95 0.05 15 / 0.4) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, oklch(0.9 0.06 30 / 0.35) 0%, transparent 45%);
+    background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-feature-settings: 'cv02', 'cv03', 'cv11';
   }
 
   ::selection {
-    background-color: color-mix(in oklab, var(--blush) 30%, transparent);
+    background-color: color-mix(in oklab, var(--rose) 35%, transparent);
   }
+}
+
+@layer utilities {
+  .font-hand { font-family: var(--font-hand); }
+  .font-script { font-family: var(--font-script); }
+  .gradient-romantic { background: var(--gradient-romantic); }
+  .gradient-blush { background: var(--gradient-blush); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .text-rose { color: var(--rose); }
+  .text-blush { color: var(--rose); }
+  .text-honey { color: var(--honey); }
+  .bg-rose { background-color: var(--rose); }
+  .bg-blush { background-color: var(--blush); }
+  .bg-cream { background-color: var(--cream); }
+  .border-rose { border-color: var(--rose); }
+  .border-blush { border-color: var(--blush); }
+
+  @keyframes float-soft {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+  }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    25%, 75% { transform: scale(1.12); }
+  }
+  @keyframes sparkle {
+    0%, 100% { opacity: 0.4; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+  .animate-float { animation: float-soft 5s ease-in-out infinite; }
+  .animate-heartbeat { animation: heartbeat 1.6s ease-in-out infinite; }
+  .animate-sparkle { animation: sparkle 2.4s ease-in-out infinite; }
 }
