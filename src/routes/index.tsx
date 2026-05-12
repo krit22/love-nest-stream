@@ -81,8 +81,7 @@ function HomeInner() {
           <p className="text-sm text-earth/60 mt-1">of showing up for each other 💕</p>
         </div>
         <div className="hidden sm:flex flex-col items-end font-hand text-xl text-rose/70">
-          <span>longest: {data?.streak?.longest_streak ?? 0}</span>
-          <span>🌷</span>
+          <span>🌷 keep going 🧸</span>
         </div>
       </section>
 
