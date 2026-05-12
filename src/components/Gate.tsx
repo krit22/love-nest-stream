@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { Nav } from "./Nav";
+import { AmbientLove } from "./Decor";
 
 export function Gate({ children, requireCouple = true }: { children: ReactNode; requireCouple?: boolean }) {
   const { loading, session, profile } = useAuth();
@@ -28,8 +29,11 @@ export function Gate({ children, requireCouple = true }: { children: ReactNode; 
 
   return (
     <>
-      <Nav />
-      <main className="max-w-5xl mx-auto px-6 sm:px-8 pb-24">{children}</main>
+      <AmbientLove />
+      <div className="relative z-10">
+        <Nav />
+        <main className="max-w-5xl mx-auto px-6 sm:px-8 pb-24">{children}</main>
+      </div>
     </>
   );
 }
