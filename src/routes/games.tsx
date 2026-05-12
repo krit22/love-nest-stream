@@ -34,7 +34,31 @@ const THIS_OR_THAT = [
   ["text", "call"],
   ["cuddle", "kiss"],
 ];
-const DARES = ["send a selfie right now 📸", "say I love you in 3 languages 💞", "sing 5 seconds of our song 🎶", "describe me in 3 words 💗", "send the last photo in your gallery 🌷", "make a heart with your hands 🫶"];
+const DARES: Dare[] = [
+  { text: "send a selfie right now 📸", kind: "photo" },
+  { text: "send the last photo in your gallery 🌷", kind: "photo" },
+  { text: "send a photo of what you're wearing today 👗", kind: "photo" },
+  { text: "send a photo of the view outside your window 🌇", kind: "photo" },
+  { text: "send a photo of your current vibe (food, drink, anything) 🍰", kind: "photo" },
+  { text: "say I love you in 3 languages 💞", kind: "mic" },
+  { text: "sing 5 seconds of our song 🎶", kind: "mic" },
+  { text: "whisper a secret only I should hear 🤫", kind: "mic" },
+  { text: "record a 10-second voice note describing my smile 🥰", kind: "mic" },
+  { text: "do your best impression of me — record it 😆", kind: "mic" },
+  { text: "tell me your favorite memory of us in 15 seconds 💗", kind: "mic" },
+  { text: "make a heart with your hands on camera 🫶", kind: "camera" },
+  { text: "blow me a kiss on camera 💋", kind: "camera" },
+  { text: "show me your goofiest face on camera 🤪", kind: "camera" },
+  { text: "do a little happy dance on camera 💃", kind: "camera" },
+  { text: "show me your cutest pout 🥺", kind: "camera" },
+  { text: "give the camera the biggest hug you can 🤗", kind: "camera" },
+  { text: "wink at me three times on camera 😉", kind: "camera" },
+  { text: "describe me in 3 words 💗", kind: "none" },
+  { text: "name 5 things you love about me 💞", kind: "none" },
+  { text: "promise me one tiny sweet thing for tomorrow 🌷", kind: "none" },
+  { text: "tell me the moment you knew you liked me 💌", kind: "none" },
+  { text: "compliment me in a way you never have before ✨", kind: "none" },
+];
 const SENTENCES = [
   "When I think of you I feel…",
   "The thing I miss most about you is…",
