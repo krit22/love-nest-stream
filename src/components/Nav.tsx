@@ -25,11 +25,14 @@ export function Nav() {
           <span className="text-[10px] uppercase tracking-[0.18em] text-earth/40">our little home 🧸</span>
         </div>
       </Link>
-      <div className="flex items-center gap-5 flex-wrap">
+      <div className="flex items-center gap-4 flex-wrap">
         <Link to="/" className={linkCls} activeProps={activeProps} activeOptions={{ exact: true }}>Home</Link>
         <Link to="/diary" className={linkCls} activeProps={activeProps}>Diary</Link>
-        <Link to="/timeline" className={linkCls} activeProps={activeProps}>Memories</Link>
+        <Link to="/memories" className={linkCls} activeProps={activeProps}>Memories</Link>
         <Link to="/mood" className={linkCls} activeProps={activeProps}>Mood</Link>
+        <Link to="/vault" className={linkCls} activeProps={activeProps}>Open When</Link>
+        <Link to="/dates" className={linkCls} activeProps={activeProps}>Dates</Link>
+        <Link to="/games" className={linkCls} activeProps={activeProps}>Games</Link>
         <span className="h-4 w-px bg-rose/20" />
         <span className="hidden sm:inline font-hand text-lg text-rose">{profile?.display_name}</span>
         <button onClick={handleSignOut} className={linkCls}>Sign out</button>
