@@ -180,19 +180,42 @@ function ThisOrThat({ onSave }: { onSave: (p: any) => void }) {
 }
 
 function DareWheel({ onSave }: { onSave: (p: any) => void }) {
-  const [dare, setDare] = useState<string | null>(null);
-  const spin = () => setDare(DARES[Math.floor(Math.random() * DARES.length)]);
+  const [dare, setDare] = useState<Dare | null>(null);
+  const [history, setHistory] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
+  const spin = () => {
+    // pick a dare we haven't seen yet this session
+    const unseen = DARES.filter((d) => !history.includes(d.text));
+    const pool = unseen.length > 0 ? unseen : DARES;
+    const next = pool[Math.floor(Math.random() * pool.length)];
+    setDare(next);
+    setHistory((h) => [...h.slice(-DARES.length + 1), next.text]);
+  };
   return (
     <Card title="Dare wheel 🎯">
-      <div className="text-center">
-        <button onClick={spin} className="size-32 rounded-full gradient-blush text-white font-script text-2xl shadow-soft hover:scale-105 transition flex items-center justify-center mx-auto">spin</button>
+      <div className="text-center space-y-3">
+        <button onClick={spin} className="size-32 rounded-full gradient-blush text-white font-script text-2xl shadow-soft hover:scale-105 transition flex items-center justify-center mx-auto">{dare ? "spin again" : "spin"}</button>
         {dare && (
           <>
-            <p className="mt-4 font-script text-3xl text-earth">{dare}</p>
-            <button onClick={() => onSave({ dare })} className="mt-3 px-5 py-2 rounded-full gradient-blush text-white">accepted 💗</button>
+            <p className="mt-4 font-script text-3xl text-earth">{dare.text}</p>
+            <p className="font-hand text-base text-rose/70">
+              {dare.kind === "camera" && "we'll open your camera so you can perform it 📷"}
+              {dare.kind === "mic" && "we'll open your mic so you can record it 🎙️"}
+              {dare.kind === "photo" && "we'll ask for a photo from your gallery 🖼️"}
+              {dare.kind === "none" && "say it out loud or type it below 💗"}
+            </p>
+            <button onClick={() => setOpen(true)} className="mt-1 px-5 py-2 rounded-full gradient-blush text-white">take the dare 💗</button>
           </>
         )}
       </div>
+      {open && dare && (
+        <DareMedia
+          kind={dare.kind}
+          prompt={dare.text}
+          onClose={() => setOpen(false)}
+          onComplete={(note) => onSave({ dare: dare.text, kind: dare.kind, note })}
+        />
+      )}
     </Card>
   );
 }
