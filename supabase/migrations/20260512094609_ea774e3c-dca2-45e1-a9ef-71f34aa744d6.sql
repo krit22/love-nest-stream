@@ -1,0 +1,1 @@
+ALTER TABLE public.virtual_dates ADD COLUMN IF NOT EXISTS date_type text NOT NULL DEFAULT 'video_call';
