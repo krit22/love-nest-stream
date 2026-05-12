@@ -5,9 +5,13 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Gamepad2, Heart, RotateCw, Send } from "lucide-react";
+import { Heart, RotateCw, Send } from "lucide-react";
+import { DareMedia } from "@/components/DareMedia";
 
 export const Route = createFileRoute("/games")({ component: GamesPage });
+
+type DareKind = "camera" | "mic" | "photo" | "none";
+type Dare = { text: string; kind: DareKind };
 
 function GamesPage() { return <Gate><GamesInner /></Gate>; }
 
