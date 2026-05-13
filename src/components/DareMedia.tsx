@@ -8,7 +8,7 @@ type Props = {
   kind: MediaKind;
   prompt: string;
   onClose: () => void;
-  onComplete: (note: string) => void;
+  onComplete: (result: { note: string; file?: File; mediaKind?: "photo" | "voice" }) => void | Promise<void>;
 };
 
 /**
@@ -24,6 +24,9 @@ export function DareMedia({ kind, prompt, onClose, onComplete }: Props) {
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const timerRef = useRef<number | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (kind === "camera") {
@@ -41,21 +44,60 @@ export function DareMedia({ kind, prompt, onClose, onComplete }: Props) {
         .getUserMedia({ audio: true })
         .then((s) => {
           streamRef.current = s;
+          chunksRef.current = [];
+          const recorder = new MediaRecorder(s, { mimeType: "audio/webm" });
+          recorder.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
+          recorder.start();
+          recorderRef.current = recorder;
           setRecording(true);
           timerRef.current = window.setInterval(() => setSeconds((x) => x + 1), 1000);
         })
         .catch(() => toast.error("we need mic access for this dare 🎀"));
     }
     return () => {
+      recorderRef.current?.state === "recording" && recorderRef.current.stop();
       streamRef.current?.getTracks().forEach((t) => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [kind]);
 
   const stop = () => {
+    recorderRef.current?.state === "recording" && recorderRef.current.stop();
     streamRef.current?.getTracks().forEach((t) => t.stop());
     if (timerRef.current) clearInterval(timerRef.current);
     setRecording(false);
+  };
+
+  const capturePhoto = async () => {
+    const video = videoRef.current;
+    if (!video || video.readyState < 2) return toast.error("camera is still warming up 💗");
+    setSaving(true);
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(async (blob) => {
+      if (!blob) { setSaving(false); return toast.error("couldn't capture this dare"); }
+      const file = new File([blob], `dare-${Date.now()}.jpg`, { type: "image/jpeg" });
+      await onComplete({ note: `captured the dare on camera 💗 (${seconds}s)`, file, mediaKind: "photo" });
+      setSaving(false);
+      stop();
+      onClose();
+    }, "image/jpeg", 0.88);
+  };
+
+  const saveVoice = async () => {
+    const recorder = recorderRef.current;
+    if (!recorder || recorder.state !== "recording") return;
+    setSaving(true);
+    const blob = await new Promise<Blob>((resolve) => {
+      recorder.onstop = () => resolve(new Blob(chunksRef.current, { type: "audio/webm" }));
+      stop();
+    });
+    const file = new File([blob], `dare-voice-${Date.now()}.webm`, { type: "audio/webm" });
+    await onComplete({ note: `recorded the dare 🎙️ (${seconds}s)`, file, mediaKind: "voice" });
+    setSaving(false);
+    onClose();
   };
 
   return (
@@ -89,7 +131,7 @@ export function DareMedia({ kind, prompt, onClose, onComplete }: Props) {
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   if (f) {
-                    onComplete(`shared a photo: ${f.name} 📸`);
+                    onComplete({ note: `shared a photo: ${f.name} 📸`, file: f, mediaKind: "photo" });
                     onClose();
                   }
                 }} />
@@ -105,21 +147,22 @@ export function DareMedia({ kind, prompt, onClose, onComplete }: Props) {
           <div className="flex gap-2 justify-center pt-1">
             {kind !== "photo" && kind !== "none" && (
               <button
-                onClick={() => { stop(); onComplete(`completed the dare on ${kind} 💗 (${seconds}s)`); onClose(); }}
-                className="px-5 py-2 rounded-full gradient-blush text-white flex items-center gap-2 font-semibold">
-                <StopCircle className="size-4" /> done 💗
+                onClick={kind === "camera" ? capturePhoto : saveVoice}
+                disabled={saving}
+                className="px-5 py-2 rounded-full gradient-blush text-white flex items-center gap-2 font-semibold disabled:opacity-60">
+                <StopCircle className="size-4" /> {kind === "camera" ? "capture & save 💗" : "save voice 💗"}
               </button>
             )}
             {kind === "none" && (
-              <button onClick={() => { onComplete("accepted the dare 💗"); onClose(); }}
+              <button onClick={() => { onComplete({ note: "accepted the dare 💗" }); onClose(); }}
                 className="px-5 py-2 rounded-full gradient-blush text-white font-semibold">accepted 💗</button>
             )}
           </div>
 
           <p className="text-xs text-earth/50 text-center font-sans">
-            {kind === "camera" && "your camera & mic stay on this device — only your dare confirmation is shared."}
-            {kind === "mic" && "your mic stays on this device — only your dare confirmation is shared."}
-            {kind === "photo" && "your photo stays on this device — only the confirmation is shared."}
+            {kind === "camera" && "capture saves one sweet proof photo to your private memories."}
+            {kind === "mic" && "your private voice proof is saved with this dare."}
+            {kind === "photo" && "your selected photo is saved with this dare in your private memories."}
           </p>
         </div>
       </div>
