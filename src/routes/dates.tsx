@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Gate } from "@/components/Gate";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -36,6 +36,12 @@ function DatesInner() {
   const [dateType, setDateType] = useState("video_call");
   const [notes, setNotes] = useState("");
   const [activeCall, setActiveCall] = useState<DateRow | null>(null);
+  const [incomingCall, setIncomingCall] = useState(false);
+
+  const { data: partner } = useQuery({
+    queryKey: ["partner", coupleId],
+    queryFn: async () => (await supabase.from("profiles").select("id, display_name").eq("couple_id", coupleId).neq("id", user!.id).maybeSingle()).data,
+  });
 
   const { data: dates } = useQuery({
     queryKey: ["dates", coupleId],
@@ -72,6 +78,26 @@ function DatesInner() {
   const isLive = next && minutesTo !== null && minutesTo <= 15 && minutesTo >= -60;
   const nextTypeMeta = next ? DATE_TYPES.find((t) => t.value === (next.date_type ?? "video_call")) : null;
 
+  useEffect(() => {
+    if (!next || !isLive || !partner?.id) return;
+    const channel = supabase
+      .channel(`date-incoming-${next.id}-${user!.id}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "date_call_signals",
+        filter: `virtual_date_id=eq.${next.id}`,
+      }, (payload) => {
+        const row = payload.new as any;
+        if (row.signal_type === "call-request" && row.recipient_id === user!.id) {
+          setIncomingCall(true);
+          setActiveCall(next);
+        }
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [isLive, next, partner?.id, user]);
+
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -88,10 +114,11 @@ function DatesInner() {
               <p className="font-hand text-lg mt-1 opacity-90">{nextTypeMeta?.label}</p>
               <p className="font-hand text-base mt-1 opacity-80">your bear is being auto-connected 💞</p>
               <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
-                <button onClick={() => setActiveCall(next)}
-                  className="px-6 py-3 rounded-full bg-white text-rose font-semibold shadow-card flex items-center gap-2 hover:scale-105 transition">
+                <button onClick={() => { setIncomingCall(false); setActiveCall(next); }}
+                  disabled={!partner?.id}
+                  className="px-6 py-3 rounded-full bg-white text-rose font-semibold shadow-card flex items-center gap-2 hover:scale-105 transition disabled:opacity-60">
                   {nextTypeMeta?.screenShare ? <MonitorPlay className="size-4" /> : <Video className="size-4" />}
-                  join the call 💗
+                  start call 💗
                 </button>
               </div>
             </>
@@ -135,13 +162,17 @@ function DatesInner() {
       <Section title="upcoming 💗" rows={upcoming} userId={user!.id} onDelete={remove} />
       <Section title="past dates 🌷" rows={past} userId={user!.id} onDelete={remove} />
 
-      {activeCall && (
+      {activeCall && partner?.id && (
         <VideoCall
-          roomName={`honeybear-${coupleId}-${activeCall.id}`}
+          coupleId={coupleId}
+          virtualDateId={activeCall.id}
+          currentUserId={user!.id}
+          partnerId={partner.id}
           displayName={profile?.display_name ?? "honey"}
           withScreenShare={DATE_TYPES.find((t) => t.value === activeCall.date_type)?.screenShare}
           subtitle={activeCall.title}
-          onClose={() => setActiveCall(null)}
+          startsIncoming={incomingCall}
+          onClose={() => { setActiveCall(null); setIncomingCall(false); }}
         />
       )}
     </div>
