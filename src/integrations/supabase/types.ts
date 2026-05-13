@@ -29,6 +29,50 @@ export type Database = {
         }
         Relationships: []
       }
+      date_call_signals: {
+        Row: {
+          couple_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          payload: Json
+          recipient_id: string
+          sender_id: string
+          signal_type: string
+          virtual_date_id: string
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          payload?: Json
+          recipient_id: string
+          sender_id: string
+          signal_type: string
+          virtual_date_id: string
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          payload?: Json
+          recipient_id?: string
+          sender_id?: string
+          signal_type?: string
+          virtual_date_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "date_call_signals_virtual_date_id_fkey"
+            columns: ["virtual_date_id"]
+            isOneToOne: false
+            referencedRelation: "virtual_dates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diary_entries: {
         Row: {
           content: string

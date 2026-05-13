@@ -5,13 +5,15 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Heart, RotateCw, Send } from "lucide-react";
+import { Heart, Mic, RotateCw, Send } from "lucide-react";
 import { DareMedia } from "@/components/DareMedia";
+import { uploadToMedia } from "@/lib/upload";
 
 export const Route = createFileRoute("/games")({ component: GamesPage });
 
 type DareKind = "camera" | "mic" | "photo" | "none";
 type Dare = { text: string; kind: DareKind };
+type DareComplete = { dare: string; kind: DareKind; note: string; file?: File; mediaKind?: "photo" | "voice" };
 
 function GamesPage() { return <Gate><GamesInner /></Gate>; }
 
@@ -82,9 +84,32 @@ function GamesInner() {
 
   const submit = async (gameKey: string, payload: any) => {
     const { error } = await supabase.from("game_results").insert({ couple_id: coupleId, user_id: user!.id, game: gameKey, payload });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return false; }
     toast.success("saved to your timeline 💗");
     qc.invalidateQueries({ queryKey: ["games", coupleId] });
+    return true;
+  };
+
+  const saveDare = async ({ file, mediaKind, ...result }: DareComplete) => {
+    try {
+      let mediaUrl: string | undefined;
+      if (file && mediaKind) {
+        toast.message("saving dare proof…");
+        mediaUrl = await uploadToMedia(file, user!.id);
+        const { error } = await supabase.from("media_items").insert({
+          couple_id: coupleId,
+          user_id: user!.id,
+          kind: mediaKind,
+          url: mediaUrl,
+          caption: `dare: ${result.dare}`,
+          tag: "dare",
+        });
+        if (error) throw error;
+      }
+      await submit("dare", { ...result, mediaUrl, mediaKind });
+    } catch (e: any) {
+      toast.error(e.message ?? "couldn't save this dare");
+    }
   };
 
   const games = [
@@ -117,7 +142,7 @@ function GamesInner() {
           <button onClick={() => setGame(null)} className="font-hand text-lg text-rose">← all games</button>
           {game === "knows" && <KnowsBetter onSave={(p) => submit("knows", p)} />}
           {game === "tot" && <ThisOrThat onSave={(p) => submit("tot", p)} />}
-          {game === "dare" && <DareWheel onSave={(p) => submit("dare", p)} />}
+          {game === "dare" && <DareWheel onSave={saveDare} />}
           {game === "sentence" && <FinishSentence onSave={(p) => submit("sentence", p)} />}
           {game === "recall" && <MemoryRecall onSave={(p) => submit("recall", p)} />}
         </div>
@@ -131,7 +156,19 @@ function GamesInner() {
             {results.map((r: any) => (
               <div key={r.id} className="bg-card rounded-2xl px-5 py-3 border-2 border-rose/15 shadow-card">
                 <p className="font-hand text-lg text-rose">{r.user_id === user!.id ? "you" : "your bear"} · {r.game}</p>
-                <pre className="font-hand text-lg text-earth whitespace-pre-wrap">{formatPayload(r.payload)}</pre>
+                <p className="font-hand text-lg text-earth whitespace-pre-wrap">{formatPayload(r.payload)}</p>
+                {r.payload?.mediaUrl && (
+                  <div className="mt-3">
+                    {r.payload.mediaKind === "photo" ? (
+                      <img src={r.payload.mediaUrl} alt="saved dare proof" className="max-h-72 rounded-2xl border-2 border-rose/15 object-cover" />
+                    ) : (
+                      <div className="rounded-2xl bg-blush/10 p-3 flex items-center gap-3">
+                        <Mic className="size-5 text-rose" />
+                        <audio src={r.payload.mediaUrl} controls className="w-full" />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -179,7 +216,7 @@ function ThisOrThat({ onSave }: { onSave: (p: any) => void }) {
   );
 }
 
-function DareWheel({ onSave }: { onSave: (p: any) => void }) {
+function DareWheel({ onSave }: { onSave: (p: DareComplete) => void | Promise<void> }) {
   const [dare, setDare] = useState<Dare | null>(null);
   const [history, setHistory] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
@@ -213,7 +250,7 @@ function DareWheel({ onSave }: { onSave: (p: any) => void }) {
           kind={dare.kind}
           prompt={dare.text}
           onClose={() => setOpen(false)}
-          onComplete={(note) => onSave({ dare: dare.text, kind: dare.kind, note })}
+          onComplete={(result) => onSave({ dare: dare.text, kind: dare.kind, ...result })}
         />
       )}
     </Card>
