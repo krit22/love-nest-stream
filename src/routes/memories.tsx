@@ -140,12 +140,12 @@ function MemoriesInner() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {gallery.map((m) => (
               <div key={m.id} className="relative group rounded-2xl overflow-hidden aspect-square bg-blush/10 border-2 border-rose/15">
-                {m.kind === "photo" && <img src={m.url} className="w-full h-full object-cover" alt={m.caption ?? ""} />}
-                {m.kind === "video" && <video src={m.url} controls className="w-full h-full object-cover" />}
+                {m.kind === "photo" && <SignedImage src={m.url} className="w-full h-full object-cover" alt={m.caption ?? ""} />}
+                {m.kind === "video" && <SignedVideo src={m.url} className="w-full h-full object-cover" />}
                 {m.kind === "voice" && (
                   <div className="w-full h-full p-3 flex flex-col items-center justify-center gap-2">
                     <Mic className="size-7 text-rose" />
-                    <audio src={m.url} controls className="w-full" />
+                    <SignedAudio src={m.url} className="w-full" />
                   </div>
                 )}
                 {m.user_id === user!.id && (
@@ -184,9 +184,9 @@ function MemoriesInner() {
                 {it.kind === "mood" && <p className="font-script text-2xl text-earth">felt <span className="text-rose">{it.content.toLowerCase()}</span> 💗</p>}
                 {it.kind === "media" && it.media && (
                   <div className="space-y-2">
-                    {it.media.kind === "photo" && <img src={it.media.url} alt="" className="rounded-2xl max-h-80 object-cover" />}
-                    {it.media.kind === "video" && <video src={it.media.url} controls className="rounded-2xl max-h-80" />}
-                    {it.media.kind === "voice" && <audio src={it.media.url} controls className="w-full" />}
+                    {it.media.kind === "photo" && <SignedImage src={it.media.url} className="rounded-2xl max-h-80 object-cover" />}
+                    {it.media.kind === "video" && <SignedVideo src={it.media.url} className="rounded-2xl max-h-80" />}
+                    {it.media.kind === "voice" && <SignedAudio src={it.media.url} className="w-full" />}
                     {it.media.caption && <p className="font-hand text-lg text-earth/80">"{it.media.caption}"</p>}
                     {it.media.tag && <span className="inline-block font-hand text-sm text-rose bg-blush/15 px-2 py-0.5 rounded-full">#{it.media.tag}</span>}
                   </div>
