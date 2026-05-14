@@ -11,6 +11,7 @@ import bearStar from "@/assets/bear-star.png";
 import bearsBlanket from "@/assets/bears-blanket.png";
 import { uploadToMedia } from "@/lib/upload";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import { SignedImage, SignedVideo, SignedAudio } from "@/components/SignedMedia";
 
 export const Route = createFileRoute("/memories")({ component: MemoriesPage });
 
