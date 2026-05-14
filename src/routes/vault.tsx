@@ -9,6 +9,7 @@ import { Heart, Mic, Square, ImagePlus, Video, Sparkles, Shuffle, Trash2 } from 
 import bearsBlanket from "@/assets/bears-blanket.png";
 import { uploadToMedia } from "@/lib/upload";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import { SignedImage, SignedVideo, SignedAudio } from "@/components/SignedMedia";
 
 export const Route = createFileRoute("/vault")({ component: VaultPage });
 
@@ -175,10 +176,10 @@ function VaultCard({ item, onDelete, canDelete }: { item: Item; onDelete?: () =>
         <button onClick={onDelete} className="absolute top-3 right-3 text-rose/50 hover:text-rose"><Trash2 className="size-4" /></button>
       )}
       {item.kind === "text" && <p className="font-script text-2xl text-earth whitespace-pre-wrap">{item.content}</p>}
-      {item.kind === "photo" && item.url && <img src={item.url} alt="" className="rounded-2xl w-full max-h-72 object-cover" />}
-      {item.kind === "video" && item.url && <video src={item.url} controls className="rounded-2xl w-full" />}
+      {item.kind === "photo" && item.url && <SignedImage src={item.url} className="rounded-2xl w-full max-h-72 object-cover" />}
+      {item.kind === "video" && item.url && <SignedVideo src={item.url} className="rounded-2xl w-full" />}
       {item.kind === "voice" && item.url && (
-        <div className="flex items-center gap-3"><Heart className="size-5 fill-rose text-rose animate-heartbeat" /><audio src={item.url} controls className="flex-1" /></div>
+        <div className="flex items-center gap-3"><Heart className="size-5 fill-rose text-rose animate-heartbeat" /><SignedAudio src={item.url} className="flex-1" /></div>
       )}
     </div>
   );

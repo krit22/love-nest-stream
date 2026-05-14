@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Heart, Mic, RotateCw, Send } from "lucide-react";
 import { DareMedia } from "@/components/DareMedia";
 import { uploadToMedia } from "@/lib/upload";
+import { SignedImage, SignedAudio } from "@/components/SignedMedia";
 
 export const Route = createFileRoute("/games")({ component: GamesPage });
 
@@ -160,11 +161,11 @@ function GamesInner() {
                 {r.payload?.mediaUrl && (
                   <div className="mt-3">
                     {r.payload.mediaKind === "photo" ? (
-                      <img src={r.payload.mediaUrl} alt="saved dare proof" className="max-h-72 rounded-2xl border-2 border-rose/15 object-cover" />
+                      <SignedImage src={r.payload.mediaUrl} alt="saved dare proof" className="max-h-72 rounded-2xl border-2 border-rose/15 object-cover" />
                     ) : (
                       <div className="rounded-2xl bg-blush/10 p-3 flex items-center gap-3">
                         <Mic className="size-5 text-rose" />
-                        <audio src={r.payload.mediaUrl} controls className="w-full" />
+                        <SignedAudio src={r.payload.mediaUrl} className="w-full" />
                       </div>
                     )}
                   </div>

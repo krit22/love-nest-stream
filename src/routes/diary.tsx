@@ -10,6 +10,7 @@ import diaryBear from "@/assets/diary-bear.jpeg";
 import girlCorazon from "@/assets/girl-corazon.jpeg";
 import bearStar from "@/assets/bear-star.png";
 import { uploadToMedia } from "@/lib/upload";
+import { SignedImage, SignedVideo, SignedAudio } from "@/components/SignedMedia";
 
 export const Route = createFileRoute("/diary")({ component: DiaryPage });
 
@@ -238,16 +239,16 @@ function MediaThumb({ m }: { m: Media }) {
     return (
       <>
         <button onClick={() => setOpen(true)} className="aspect-square rounded-2xl overflow-hidden border-2 border-rose/20 hover:border-rose transition">
-          <img src={m.url} alt="" className="w-full h-full object-cover" />
+          <SignedImage src={m.url} className="w-full h-full object-cover" />
         </button>
-        {open && <Lightbox onClose={() => setOpen(false)}><img src={m.url} alt="" className="max-h-[85vh] max-w-[92vw] rounded-2xl" /></Lightbox>}
+        {open && <Lightbox onClose={() => setOpen(false)}><SignedImage src={m.url} className="max-h-[85vh] max-w-[92vw] rounded-2xl" /></Lightbox>}
       </>
     );
   }
   if (m.kind === "video") {
-    return <video src={m.url} controls className="aspect-square rounded-2xl object-cover bg-black/5 border-2 border-rose/20" />;
+    return <SignedVideo src={m.url} className="aspect-square rounded-2xl object-cover bg-black/5 border-2 border-rose/20" />;
   }
-  return <audio src={m.url} controls className="col-span-3 w-full" />;
+  return <SignedAudio src={m.url} className="col-span-3 w-full" />;
 }
 
 function Lightbox({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
