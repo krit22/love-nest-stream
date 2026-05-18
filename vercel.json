@@ -1,4 +1,11 @@
 {
+  "version": 2,
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/client"
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "^/(?!assets/|favicon\\.ico$|robots\\.txt$|.*\\..*$).*$",
+      "destination": "/index.html"
+    }
+  ]
 }
